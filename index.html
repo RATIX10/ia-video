@@ -3,101 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Video Generator</title>
+    <title>AI Cinematic Video Generator</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f172a;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+        :root { --primary: #6366f1; --bg: #0b0f1a; --card: #161b2c; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .app-card { background: var(--card); padding: 30px; border-radius: 20px; width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid #2d3748; }
+        
+        h2 { margin-bottom: 20px; font-weight: 600; color: #fff; }
+        label { display: block; text-align: left; margin-bottom: 8px; font-size: 0.9rem; color: #94a3b8; }
+        
+        textarea, select { 
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #334155; 
+            background: #1e293b; color: white; margin-bottom: 20px; box-sizing: border-box;
         }
-        .container {
-            background-color: #1e293b;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            width: 90%;
-            max-width: 600px;
-            text-align: center;
+
+        .btn-generate { 
+            width: 100%; padding: 15px; border: none; border-radius: 10px; 
+            background: linear-gradient(90deg, #6366f1, #a855f7); color: white; 
+            font-weight: bold; cursor: pointer; transition: transform 0.2s;
         }
-        textarea {
-            width: 100%;
-            height: 100px;
-            padding: 10px;
-            margin-top: 1rem;
-            border-radius: 0.5rem;
-            border: none;
-            background-color: #334155;
-            color: white;
-            resize: none;
-        }
-        button {
-            margin-top: 1rem;
-            padding: 0.8rem 2rem;
-            border: none;
-            border-radius: 0.5rem;
-            background-color: #3b82f6;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #2563eb;
-        }
-        #video-display {
-            margin-top: 2rem;
-            display: none;
-        }
-        video {
-            width: 100%;
-            border-radius: 0.5rem;
-            border: 2px solid #3b82f6;
-        }
+        .btn-generate:active { transform: scale(0.98); }
+
+        /* Progress Bar */
+        .progress-container { display: none; margin-top: 25px; }
+        .bar-bg { width: 100%; background: #334155; height: 10px; border-radius: 5px; overflow: hidden; }
+        .bar-fill { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s; }
+        .status-text { font-size: 0.8rem; margin-top: 8px; color: #94a3b8; }
+
+        #video-player { display: none; margin-top: 25px; width: 100%; border-radius: 10px; overflow: hidden; border: 1px solid var(--primary); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>AI Video Generátor</h2>
-    <p>Opíš, aké video chceš vytvoriť:</p>
-    <textarea id="prompt" placeholder="Napr. Astronaut cvála na koni po Marse v štýle cinematic..."></textarea>
-    <br>
-    <button onclick="generateVideo()">Generovať video</button>
+<div class="app-card">
+    <h2>AI Studio Pro</h2>
+    
+    <label>Popis scény (Prompt)</label>
+    <textarea id="prompt" placeholder="Napr. Realistický prelet nad zasneženými Alpami pri západe slnka, 8k, dronové zábery..."></textarea>
 
-    <div id="video-display">
-        <h3>Tvoje vygenerované video:</h3>
-        <video id="outputVideo" controls>
-            <source src="" type="video/mp4">
-            Váš prehliadač nepodporuje video tag.
-        </video>
+    <label>Dĺžka videa</label>
+    <select id="duration">
+        <option value="60">1 Minúta (Rýchle generovanie)</option>
+        <option value="300">5 Minút</option>
+        <option value="1200">20 Minút</option>
+        <option value="3600">1 Hodina (Filmová produkcia)</option>
+    </select>
+
+    <button class="btn-generate" onclick="startGeneration()">Spustiť AI renderovanie</button>
+
+    <div class="progress-container" id="progress-box">
+        <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
+        <div class="status-text" id="status">Pripravujem AI modely...</div>
     </div>
+
+    <video id="video-player" controls>
+        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+    </video>
 </div>
 
 <script>
-    function generateVideo() {
-        const prompt = document.getElementById('prompt').value;
-        const display = document.getElementById('video-display');
-        const video = document.getElementById('outputVideo');
+function startGeneration() {
+    const prompt = document.getElementById('prompt').value;
+    const duration = document.getElementById('duration').value;
+    if(!prompt) { alert("Zadaj popis!"); return; }
 
-        if (prompt.trim() === "") {
-            alert("Prosím, zadaj popis videa.");
-            return;
+    const progressBox = document.getElementById('progress-box');
+    const bar = document.getElementById('bar');
+    const status = document.getElementById('status');
+    const player = document.getElementById('video-player');
+
+    progressBox.style.display = "block";
+    player.style.display = "none";
+    
+    let progress = 0;
+    // Simulácia času podľa dĺžky videa
+    // Čím dlhšie video, tým pomalšie beží progress bar
+    const speed = duration > 1000 ? 500 : 100; 
+
+    const interval = setInterval(() => {
+        progress += Math.random() * 5;
+        if(progress > 100) progress = 100;
+        
+        bar.style.width = progress + "%";
+        
+        if(progress < 30) status.innerText = "Analyzujem prompt a textúry...";
+        else if(progress < 60) status.innerText = "Generujem AI snímky (" + Math.floor(progress*24) + " frameov)...";
+        else if(progress < 90) status.innerText = "Interpolácia pohybu a rendering " + (duration/60) + " min. videa...";
+        else status.innerText = "Finálne úpravy a export...";
+
+        if(progress >= 100) {
+            clearInterval(interval);
+            status.innerText = "Hotovo! Video je pripravené.";
+            player.style.display = "block";
+            player.play();
         }
-
-        alert("AI teraz spracováva tvoj prompt: " + prompt + "\n(V reálnej aplikácii by sa teraz volalo API)");
-
-        // Simulácia načítania videa (tu by si vložil URL z API)
-        // Použijeme ukážkové video
-        video.src = "https://www.w3schools.com/html/mov_bbb.mp4"; 
-        display.style.display = "block";
-        video.load();
-        video.play();
-    }
+    }, speed);
+}
 </script>
 
 </body>
